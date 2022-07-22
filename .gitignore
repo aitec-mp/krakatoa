@@ -1,0 +1,9 @@
+krakatoa/
+
+.vscode/
+.ipynb_checkpoints/
+__pychache__/
+dist
+krakatoa/examples/
+krakatoa/.vscode/
+krakatoa/.ipynb_checkpoints/
