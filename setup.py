@@ -9,9 +9,9 @@ setup(
   author = 'Matheus de Prá Andrade',              
   author_email = 'mpandrade@ucs.br',    
   url = 'https://github.com/aitec-mp/krakatoa',  
-  download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',    # I explain this later on
+  download_url = 'https://github.com/aitec-mp/krakatoa/archive/refs/tags/0.0.1.tar.gz',    
   keywords = ['krakatoa', 'machine learning'],  
-  install_requires=[            # I get to this in a second
+  install_requires=[    
           'sklearn',
           'numpy',
           'pandas',
