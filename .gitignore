@@ -2,6 +2,8 @@
 .ipynb_checkpoints/
 __pychache__/
 dist
+build
+krakatoa.egg-info
 krakatoa/examples/
 krakatoa/.vscode/
 krakatoa/.ipynb_checkpoints/

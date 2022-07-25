@@ -1,9 +1,11 @@
+from setuptools import setup, find_packages
+import codecs
+import os
 
-from distutils.core import setup
 setup(
   name = 'krakatoa',       
-  packages = ['krakatoa'],  
-  version = '0.0.3',      
+  packages = ['krakatoa', 'krakatoa/models', 'krakatoa/future'],  
+  version = '0.0.4',      
   license='MIT',        
   description = 'Machine Learning high level package.',  
   author = 'Matheus de Prá Andrade',              
