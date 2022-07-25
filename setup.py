@@ -3,13 +3,13 @@ from distutils.core import setup
 setup(
   name = 'krakatoa',       
   packages = ['krakatoa'],  
-  version = '0.0.1',      
+  version = '0.0.3',      
   license='MIT',        
   description = 'Machine Learning high level package.',  
   author = 'Matheus de Prá Andrade',              
   author_email = 'mpandrade@ucs.br',    
   url = 'https://github.com/aitec-mp/krakatoa',  
-  download_url = 'https://github.com/aitec-mp/krakatoa/archive/refs/tags/0.0.1.tar.gz',    
+  download_url = 'https://github.com/aitec-mp/krakatoa/archive/refs/tags/0.0.3.tar.gz',    
   keywords = ['krakatoa', 'machine learning'],  
   install_requires=[    
           'sklearn',
