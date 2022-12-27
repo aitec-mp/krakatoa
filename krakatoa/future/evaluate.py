@@ -22,3 +22,13 @@ def categoryPerFeature(df, columns, sort=True):
     
     return n_categories_per_feature
     
+def countNull(df, mode='count'):
+    
+    result = ''
+    
+    if mode == 'perc':
+        result = (((df.isnull().sum() | df.eq('').sum())/df.shape[0])*100)
+    elif mode == 'count':
+        result = (df.isnull().sum() | df.eq('').sum()).to_dict()
+
+    return result
