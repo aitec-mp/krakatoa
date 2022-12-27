@@ -16,7 +16,7 @@ from sklearn import metrics
 #============================================================
 #TODO: Criar modulo para metrics
 
-def getScores():
+def getScores(kind):
 
     regression_scores = {
         'explained_variance' : {'f' : metrics.explained_variance_score, 'name' : 'explained_variance'},
@@ -35,4 +35,16 @@ def getScores():
         'd2_tweedie_score' : {'f' : metrics.d2_tweedie_score, 'name' : 'd2_tweedie_score'}
         }
 
-    return regression_scores
+
+    classification_scores = {
+        'accuracy' : {'f' : metrics.accuracy_score, 'name' : 'accuracy'},
+        'balanced_accuracy' : {'f' : metrics.balanced_accuracy_score, 'name' : 'balanced_accuracy'},
+        'roc_auc' : {'f' : metrics.roc_auc_score, 'name' : 'roc_auc'}
+        }
+
+    if kind == "classification":
+        scores = classification_scores
+    else:
+        scores = regression_scores
+    
+    return scores
