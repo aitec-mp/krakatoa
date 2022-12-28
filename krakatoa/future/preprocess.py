@@ -192,7 +192,7 @@ class DataClean():
         hot_ds = hot.transform(self.dataset[cat_cols])
 
         # Cria dataframe transformada
-        hot_df = pd.DataFrame(hot_ds, columns = hot.get_feature_names(input_features=cat_cols))
+        hot_df = pd.DataFrame(hot_ds, columns = hot.get_feature_names_out(input_features=cat_cols))
 
         # Concatena o dataframe do one hot com o original
         concat_df = pd.concat([self.dataset, hot_df], axis=1).drop(columns=cat_cols, axis=1)
