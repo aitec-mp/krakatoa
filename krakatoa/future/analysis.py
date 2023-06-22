@@ -16,8 +16,8 @@ from .preprocess import DataClean
 #============================================================
 class Analytics(DataClean):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, target, mode):
+        super().__init__(target, mode)
         pass
 
     def loadDataset(self, dataset, load_from="dataframe"):
