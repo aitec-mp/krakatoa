@@ -61,11 +61,10 @@ def scale(dataset, columns, scaler='min_max'):
 # Class designed to dataset management   
 class DataClean():
 
-    def __init__(self, target, mode):
+    def __init__(self, target):
         self.dataset = pd.DataFrame()
         self.originalDataset = pd.DataFrame()
         self.target = target
-        self.mode = mode
 
     def loadDataset(self, dataset, load_from="dataframe"):
         if load_from == "dataframe":
@@ -77,7 +76,8 @@ class DataClean():
         else:
             print("Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
 
-
+        self._getUniqueFeatures()
+        self._nullPercFeatures()
 
     def getColType(self):
         
@@ -95,8 +95,7 @@ class DataClean():
         self.category_cols = catCols
         self.numeric_cols = numCols
         self.target_col = [self.target]
-
-    
+ 
     def splitTrainTest(self):
 
         X = self.dataset.drop(columns=[self.target])
@@ -108,7 +107,7 @@ class DataClean():
         return X, y
 
     def _nullPercFeatures(self):
-        result = countNull(self.dataset, mode='perc')
+        result = countNull(self.dataset)
 
         self.percNull = result
         return result

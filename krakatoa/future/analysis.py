@@ -16,8 +16,8 @@ from .preprocess import DataClean
 #============================================================
 class Analytics(DataClean):
 
-    def __init__(self, target, mode):
-        super().__init__(target, mode)
+    def __init__(self, target):
+        super().__init__(target)
         pass
 
     def loadDataset(self, dataset, load_from="dataframe"):
@@ -29,7 +29,6 @@ class Analytics(DataClean):
             self.originalDataset = pd.DataFrame(dataset)
         else:
             print("Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
-
 
     def columnDist(self, column):
 
@@ -52,7 +51,11 @@ class Analytics(DataClean):
 
             if percUnique > 10 or countUnique > 10: #TODO revisitar esse percentual
                 data_type = "histogram"
-                y, x = np.histogram(self.dataset[column])
+                y, x = np.histogram(self.dataset[column]) # y = freq | x = edges
+                '''
+                Chart implementation ex:
+                ax.bar(x[:-1], y, width=np.diff(x), edgecolor="black", align="edge")
+                '''
 
             else:
                 data_type = "count"
@@ -65,7 +68,7 @@ class Analytics(DataClean):
 
     def targetDist(self, target):
 
-        result = self.countColumnValues(target)
+        result = self.columnDist(target)
 
         self.distTarget = result
 
@@ -138,5 +141,44 @@ class Analytics(DataClean):
                 self.described[col]['dist'] = self.columnDist(col)
 
         return self.described
-            
+
+    def diagnosis(self):
+
+        '''
+        Disclaimer!
+
+        This function returns some paremeters like -> 'missing', 'unique', 'target'
+
+        When those returns as False, means that they are not ok and need attention!
+        The True flag, means that there are no missing data, the target is solid or there are no unique columns!
+        '''
+
+        diagnosis = {'missing' : True, 'unique' : True, 'target' : True}
+        #Check for missing data
+        null_data = self._nullPercFeatures()
+        null_diagnosis = null_data[null_data['count']>0][['variable', 'count']].to_dict('records')
+
+        if len(null_diagnosis) > 0:
+            null_diagnosis_items = {}
+            for item in null_diagnosis:
+                null_diagnosis_items[item['variable']] = item['count']
+            diagnosis['missing'] = False
+            diagnosis['missing_data'] = null_diagnosis_items
+
+        #Check for unique data
+        unique_data = self.dataset.nunique()
+        unique_diagnosis = unique_data[unique_data==1].to_dict()
+
+        if len(unique_diagnosis.keys()) > 1:
+            diagnosis['unique'] = False
+            diagnosis['unique_data'] = unique_diagnosis
+
+        #Check for valid target
+        if not self.target:
+            diagnosis['target'] = False
+        else:
+            if self.target not in set(self.dataset.columns):
+                diagnosis['target'] = False
+
+        return diagnosis
         
