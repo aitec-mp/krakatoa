@@ -61,11 +61,10 @@ def scale(dataset, columns, scaler='min_max'):
 # Class designed to dataset management   
 class DataClean():
 
-    def __init__(self, target, mode):
+    def __init__(self, target):
         self.dataset = pd.DataFrame()
         self.originalDataset = pd.DataFrame()
         self.target = target
-        self.mode = mode
 
     def loadDataset(self, dataset, load_from="dataframe"):
         if load_from == "dataframe":
@@ -76,6 +75,9 @@ class DataClean():
             self.originalDataset = pd.DataFrame(dataset)
         else:
             print("Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
+
+        self._getUniqueFeatures()
+        self._nullPercFeatures()
 
     def getColType(self):
         

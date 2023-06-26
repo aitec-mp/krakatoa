@@ -16,8 +16,8 @@ from .preprocess import DataClean
 #============================================================
 class Analytics(DataClean):
 
-    def __init__(self, target, mode):
-        super().__init__(target, mode)
+    def __init__(self, target):
+        super().__init__(target)
         pass
 
     def loadDataset(self, dataset, load_from="dataframe"):
@@ -51,7 +51,11 @@ class Analytics(DataClean):
 
             if percUnique > 10 or countUnique > 10: #TODO revisitar esse percentual
                 data_type = "histogram"
-                y, x = np.histogram(self.dataset[column])
+                y, x = np.histogram(self.dataset[column]) # y = freq | x = edges
+                '''
+                Chart implementation ex:
+                ax.bar(x[:-1], y, width=np.diff(x), edgecolor="black", align="edge")
+                '''
 
             else:
                 data_type = "count"
@@ -64,7 +68,7 @@ class Analytics(DataClean):
 
     def targetDist(self, target):
 
-        result = self.countColumnValues(target)
+        result = self.columnDist(target)
 
         self.distTarget = result
 
