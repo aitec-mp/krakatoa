@@ -82,7 +82,6 @@ class DataClean():
         # TODO precisamos ainda identificar colunas de outros tipos , como data e quando é numerica e categorica
         catCols = []
         numCols = []
-        
 
         for k, v in self.dataset.dtypes.items():
             if v in ['object', 'category']:
@@ -207,7 +206,6 @@ class DataClean():
 
         return self.dataset
 
-
     def pipeline(self, steps):
 
         _config = {
@@ -250,5 +248,13 @@ class DataClean():
         
         return self.dataset
 
+    def setColumnType(self, col:str, col_type:str):
 
+        try:
+            self.dataset[col] = self.dataset[col].astype(col_type)
+            self.getColType()
+            return True
+        except Exception as e:
+            print(e)
+            return False
        

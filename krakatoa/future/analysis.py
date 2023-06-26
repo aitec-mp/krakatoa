@@ -5,15 +5,17 @@ Data Analysis (:mod:`krakatoa.future.analysis`)
 ============================================================
 '''
 
-#============================================================
+# ============================================================
 # Imports
-#============================================================
+# ============================================================
 
 import pandas as pd
 import numpy as np
 from .preprocess import DataClean
 
-#============================================================
+# ============================================================
+
+
 class Analytics(DataClean):
 
     def __init__(self, target):
@@ -28,7 +30,8 @@ class Analytics(DataClean):
             self.dataset = pd.DataFrame(dataset)
             self.originalDataset = pd.DataFrame(dataset)
         else:
-            print("Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
+            print(
+                "Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
 
     def columnDist(self, column):
 
@@ -44,14 +47,16 @@ class Analytics(DataClean):
             x = list(values.keys().astype("string"))
             y = list(values.values)
 
-        else:          
+        else:
             # Check the amount of unique values
-            percUnique = (self.dataset[column].nunique() / self.dataset.shape[0]) * 100
+            percUnique = (
+                self.dataset[column].nunique() / self.dataset.shape[0]) * 100
             countUnique = self.dataset[column].nunique()
 
-            if percUnique > 10 or countUnique > 10: #TODO revisitar esse percentual
+            if percUnique > 10 or countUnique > 10:  # TODO revisitar esse percentual
                 data_type = "histogram"
-                y, x = np.histogram(self.dataset[column]) # y = freq | x = edges
+                # y = freq | x = edges
+                y, x = np.histogram(self.dataset[column])
                 '''
                 Chart implementation ex:
                 ax.bar(x[:-1], y, width=np.diff(x), edgecolor="black", align="edge")
@@ -63,7 +68,7 @@ class Analytics(DataClean):
                 x = list(values.keys().astype("string"))
                 y = list(values.values)
 
-        result = {'data_type': data_type, 'x' : list(x), 'y' : list(y)}
+        result = {'data_type': data_type, 'x': list(x), 'y': list(y)}
         return result
 
     def targetDist(self, target):
@@ -90,7 +95,8 @@ class Analytics(DataClean):
         if unique.shape[0] > 0:
 
             # Select category cols
-            textColumns = list(unique[unique.keys().isin(self.category_cols)].keys())
+            textColumns = list(
+                unique[unique.keys().isin(self.category_cols)].keys())
 
         catColumns = [x for x in self.category_cols if x not in textColumns]
 
@@ -100,8 +106,8 @@ class Analytics(DataClean):
         # Converte o dtype das colunas de acordo com o que foi identificado
         if changeDtypes:
             conversion_dict = {
-                "category" : self.catColumns,
-                "string" : self.textColumns
+                "category": self.catColumns,
+                "string": self.textColumns
             }
 
             for dtype, columns in conversion_dict.items():
@@ -123,12 +129,14 @@ class Analytics(DataClean):
         # Get columns types and add to describe dataframe
         columns_dtypes = list(self.dataset.dtypes.keys())
         values_dtype = list(self.dataset.dtypes.astype("string").values)
-        dfDtypes = pd.DataFrame(data=[values_dtype], columns=columns_dtypes, index=['dtype'])
+        dfDtypes = pd.DataFrame(
+            data=[values_dtype], columns=columns_dtypes, index=['dtype'])
 
         # Add another unique counter
         columns_unique = list(self.uniqueCount.keys())
         values_unique = list(self.uniqueCount.astype("string").values)
-        dfUnique = pd.DataFrame(data=[values_unique], columns=columns_unique, index=['nunique'])
+        dfUnique = pd.DataFrame(
+            data=[values_unique], columns=columns_unique, index=['nunique'])
 
         described = pd.concat([pdDescribe, dfDtypes, dfUnique])
 
@@ -137,13 +145,12 @@ class Analytics(DataClean):
 
         if get_dist:
             for col in described.keys():
-                
+
                 self.described[col]['dist'] = self.columnDist(col)
 
         return self.described
 
-    def diagnosis(self):
-
+    def diagnostic(self):
         '''
         Disclaimer!
 
@@ -153,65 +160,74 @@ class Analytics(DataClean):
         The True flag, means that there are no missing data, the target is solid or there are no unique columns!
         '''
 
-        diagnosis = {'missing' : True, 'unique' : True, 'target' : True}
-        #Check for missing data
+        res_diagnostic = {'missing': True, 'unique': True, 'target': True}
+        # Check for missing data
         null_data = self._nullPercFeatures()
-        null_diagnosis = null_data[null_data['count']>0][['variable', 'count']].to_dict('records')
+        null_diagnostic = null_data[null_data['count'] > 0][[
+            'variable', 'count']].to_dict('records')
 
-        if len(null_diagnosis) > 0:
-            null_diagnosis_items = {}
-            for item in null_diagnosis:
-                null_diagnosis_items[item['variable']] = item['count']
-            diagnosis['missing'] = False
-            diagnosis['missing_data'] = null_diagnosis_items
+        if len(null_diagnostic) > 0:
+            null_diagnostic_items = {}
+            for item in null_diagnostic:
+                null_diagnostic_items[item['variable']] = item['count']
+            res_diagnostic['missing'] = False
+            res_diagnostic['missing_data'] = null_diagnostic_items
 
-        #Check for unique data
+        # Check for unique data
         unique_data = self.dataset.nunique()
-        unique_diagnosis = unique_data[unique_data==1].to_dict()
+        unique_diagnostic = unique_data[unique_data == 1].to_dict()
 
-        if len(unique_diagnosis.keys()) > 1:
-            diagnosis['unique'] = False
-            diagnosis['unique_data'] = unique_diagnosis
+        if len(unique_diagnostic.keys()) > 1:
+            res_diagnostic['unique'] = False
+            res_diagnostic['unique_data'] = unique_diagnostic
 
-        #Check for valid target
+        # Check for valid target
         if not self.target:
-            diagnosis['target'] = False
+            res_diagnostic['target'] = False
         else:
             if self.target not in set(self.dataset.columns):
-                diagnosis['target'] = False
+                res_diagnostic['target'] = False
 
-        return diagnosis
-        
-    def iqrOutliers(self, column:str, method:str = 'midpoint'):
+        return res_diagnostic
+
+    def iqrOutliers(self, column: str, method: str = 'midpoint'):
 
         if column in self.numeric_cols:
             Q1 = np.percentile(self.dataset[column], 25, method=method)
+            Q2 = np.percentile(self.dataset[column], 50, method=method)
             Q3 = np.percentile(self.dataset[column], 75, method=method)
+            Q4 = np.percentile(self.dataset[column], 100, method=method)
             IQR = Q3 - Q1
 
             # Calculate bounds
             lower_bound = Q1-1.5*IQR
-            rows_lower_bound = list(self.dataset[self.dataset[column]<=lower_bound].index)
+            rows_lower_bound = list(
+                self.dataset[self.dataset[column] <= lower_bound].index)
 
             upper_bound = Q3+1.5*IQR
-            rows_upper_bound = list(self.dataset[self.dataset[column]>=upper_bound].index)
+            rows_upper_bound = list(
+                self.dataset[self.dataset[column] >= upper_bound].index)
 
-            has_outliers = False if len(rows_lower_bound) + len(rows_upper_bound) == 0 else True
+            has_outliers = False if len(
+                rows_lower_bound) + len(rows_upper_bound) == 0 else True
             return {
-                'has_outliers' : has_outliers,
-                'lower_bound' : lower_bound,
-                'rows_lower_bound' : rows_lower_bound,
-                'upper_bound' : upper_bound,
-                'rows_upper_bound' : rows_upper_bound,
-                'Q1' : Q1,
-                'Q3' : Q3,
-                'IQR' : IQR
+                'has_outliers': has_outliers,
+                'lower_bound': lower_bound,
+                'rows_lower_bound': rows_lower_bound,
+                'upper_bound': upper_bound,
+                'rows_upper_bound': rows_upper_bound,
+                'Q1': Q1,
+                'Q2': Q2,
+                'Q3': Q3,
+                'Q4': Q4,
+                'IQR': IQR
             }
-        
+
         else:
-            raise ValueError('Outliers calculations can be performed only on numeric columns!')
-    
-    def searchOutliers(self, method:str = 'midpoint'):
+            raise ValueError(
+                'Outliers calculations can be performed only on numeric columns!')
+
+    def searchOutliers(self, method: str = 'midpoint'):
         outliers = {}
         for col in self.numeric_cols:
 
@@ -220,6 +236,64 @@ class Analytics(DataClean):
             if iqr_outliers['has_outliers']:
                 outliers[col] = iqr_outliers
 
-        
         return outliers
 
+    def columnInfo(self, column: str, get_values: bool = True, get_values_method: str = 'head', get_values_size: int = 10):
+        info = {
+            'type': str(),
+            'values': list(), 
+            'stats': dict(),
+            'outliers': dict()
+        }
+
+        info['type'] = str(self.dataset[column].dtype)
+
+        # Implement method to verify column types
+        # Getting most common values
+        values, count = np.unique(self.dataset[column], return_counts=True)
+        count_sort_ind = np.argsort(-count)
+
+        ordered_values = values[count_sort_ind]
+        total_size = count.sum()
+        perc_count = (count[count_sort_ind]/total_size)*100
+
+
+        # top 10 most common
+        for name, perc in zip(ordered_values, perc_count):
+            if 'most_common' not in info['stats'].keys():
+                info['stats']['most_common'] = []
+
+            info['stats']['most_common'].append({'name': name, 'perc': round(perc, 2)})
+
+        # unique values count
+        info['stats'].update({'unique' : self.dataset[column].nunique()})
+
+        # Get outliers
+        if column in self.numeric_cols:
+            info['outliers'] = self.iqrOutliers(column)
+
+            #get describe
+            info['stats'].update(self.dataset[column].describe())
+
+        # get column values
+        if get_values:
+            if get_values_method == 'tail':
+                info['values'] = list(
+                    self.dataset[column].tail(get_values_size).values)
+            else:
+                info['values'] = list(
+                    self.dataset[column].head(get_values_size).values)
+
+        return info
+
+    def allColumnInfo(self, get_values: bool = True, get_values_method: str = 'head', get_values_size: int = 10, ignore_columns: list = []):
+
+        result = {}
+        columns = [
+            col for col in self.dataset.columns if col not in ignore_columns]
+
+        for col in columns:
+            result[col] = self.columnInfo(
+                col, get_values=get_values, get_values_method=get_values_method, get_values_size=get_values_size)
+
+        return result
