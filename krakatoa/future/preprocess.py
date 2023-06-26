@@ -77,8 +77,6 @@ class DataClean():
         else:
             print("Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
 
-
-
     def getColType(self):
         
         # TODO precisamos ainda identificar colunas de outros tipos , como data e quando é numerica e categorica
@@ -95,8 +93,7 @@ class DataClean():
         self.category_cols = catCols
         self.numeric_cols = numCols
         self.target_col = [self.target]
-
-    
+ 
     def splitTrainTest(self):
 
         X = self.dataset.drop(columns=[self.target])
@@ -108,7 +105,7 @@ class DataClean():
         return X, y
 
     def _nullPercFeatures(self):
-        result = countNull(self.dataset, mode='perc')
+        result = countNull(self.dataset)
 
         self.percNull = result
         return result

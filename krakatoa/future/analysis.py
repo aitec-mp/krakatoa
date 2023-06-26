@@ -30,7 +30,6 @@ class Analytics(DataClean):
         else:
             print("Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
 
-
     def columnDist(self, column):
 
         # Verify if column is numeric or string
@@ -138,5 +137,44 @@ class Analytics(DataClean):
                 self.described[col]['dist'] = self.columnDist(col)
 
         return self.described
-            
+
+    def diagnosis(self):
+
+        '''
+        Disclaimer!
+
+        This function returns some paremeters like -> 'missing', 'unique', 'target'
+
+        When those returns as False, means that they are not ok and need attention!
+        The True flag, means that there are no missing data, the target is solid or there are no unique columns!
+        '''
+
+        diagnosis = {'missing' : True, 'unique' : True, 'target' : True}
+        #Check for missing data
+        null_data = self._nullPercFeatures()
+        null_diagnosis = null_data[null_data['count']>0][['variable', 'count']].to_dict('records')
+
+        if len(null_diagnosis) > 0:
+            null_diagnosis_items = {}
+            for item in null_diagnosis:
+                null_diagnosis_items[item['variable']] = item['count']
+            diagnosis['missing'] = False
+            diagnosis['missing_data'] = null_diagnosis_items
+
+        #Check for unique data
+        unique_data = self.dataset.nunique()
+        unique_diagnosis = unique_data[unique_data==1].to_dict()
+
+        if len(unique_diagnosis.keys()) > 1:
+            diagnosis['unique'] = False
+            diagnosis['unique_data'] = unique_diagnosis
+
+        #Check for valid target
+        if not self.target:
+            diagnosis['target'] = False
+        else:
+            if self.target not in set(self.dataset.columns):
+                diagnosis['target'] = False
+
+        return diagnosis
         
