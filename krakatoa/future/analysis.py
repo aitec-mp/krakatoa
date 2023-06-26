@@ -182,3 +182,44 @@ class Analytics(DataClean):
 
         return diagnosis
         
+    def iqrOutliers(self, column:str, method:str = 'midpoint'):
+
+        if column in self.numeric_cols:
+            Q1 = np.percentile(self.dataset[column], 25, method=method)
+            Q3 = np.percentile(self.dataset[column], 75, method=method)
+            IQR = Q3 - Q1
+
+            # Calculate bounds
+            lower_bound = Q1-1.5*IQR
+            rows_lower_bound = list(self.dataset[self.dataset[column]<=lower_bound].index)
+
+            upper_bound = Q3+1.5*IQR
+            rows_upper_bound = list(self.dataset[self.dataset[column]>=upper_bound].index)
+
+            has_outliers = False if len(rows_lower_bound) + len(rows_upper_bound) == 0 else True
+            return {
+                'has_outliers' : has_outliers,
+                'lower_bound' : lower_bound,
+                'rows_lower_bound' : rows_lower_bound,
+                'upper_bound' : upper_bound,
+                'rows_upper_bound' : rows_upper_bound,
+                'Q1' : Q1,
+                'Q3' : Q3,
+                'IQR' : IQR
+            }
+        
+        else:
+            raise ValueError('Outliers calculations can be performed only on numeric columns!')
+    
+    def searchOutliers(self, method:str = 'midpoint'):
+        outliers = {}
+        for col in self.numeric_cols:
+
+            iqr_outliers = self.iqrOutliers(col, method)
+
+            if iqr_outliers['has_outliers']:
+                outliers[col] = iqr_outliers
+
+        
+        return outliers
+
