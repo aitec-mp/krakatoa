@@ -22,17 +22,6 @@ class Analytics(DataClean):
         super().__init__(target)
         pass
 
-    def loadDataset(self, dataset, load_from="dataframe"):
-        if load_from == "dataframe":
-            self.dataset = dataset
-            self.originalDataset = dataset
-        elif load_from == "dict":
-            self.dataset = pd.DataFrame(dataset)
-            self.originalDataset = pd.DataFrame(dataset)
-        else:
-            print(
-                "Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
-
     def columnDist(self, column):
 
         # Verify if column is numeric or string
@@ -239,9 +228,10 @@ class Analytics(DataClean):
         return outliers
 
     def columnInfo(self, column: str, get_values: bool = True, get_values_method: str = 'head', get_values_size: int = 10):
+
         info = {
             'type': str(),
-            'values': list(), 
+            'values': list(),
             'stats': dict(),
             'outliers': dict()
         }
@@ -257,22 +247,34 @@ class Analytics(DataClean):
         total_size = count.sum()
         perc_count = (count[count_sort_ind]/total_size)*100
 
-
         # top 10 most common
         for name, perc in zip(ordered_values, perc_count):
             if 'most_common' not in info['stats'].keys():
                 info['stats']['most_common'] = []
 
-            info['stats']['most_common'].append({'name': name, 'perc': round(perc, 2)})
+            info['stats']['most_common'].append(
+                {'name': name, 'perc': round(perc, 2)})
 
         # unique values count
-        info['stats'].update({'unique' : self.dataset[column].nunique()})
+        info['stats'].update({'unique': self.dataset[column].nunique()})
+
+        # unique values
+        info['stats'].update(
+            {'unique_values': list(self.dataset[column].unique())})
+
+        # Missing values
+        info['stats'].update(
+            {'missing_values': self.dataset[column][self.dataset[column] == ''].count()})
+
+        # Null values
+        info['stats'].update(
+            {'null_values': self.dataset[column][self.dataset[column].isnull()].count()})
 
         # Get outliers
         if column in self.numeric_cols:
             info['outliers'] = self.iqrOutliers(column)
 
-            #get describe
+            # get describe
             info['stats'].update(self.dataset[column].describe())
 
         # get column values
@@ -283,17 +285,30 @@ class Analytics(DataClean):
             else:
                 info['values'] = list(
                     self.dataset[column].head(get_values_size).values)
-
+                
         return info
 
-    def allColumnInfo(self, get_values: bool = True, get_values_method: str = 'head', get_values_size: int = 10, ignore_columns: list = []):
+    def allColumnInfo(self, get_values: bool = True, get_values_method: str = 'head', get_values_size: int = 10, ignore_columns: list = [], output_as: str = 'dict'):
 
-        result = {}
         columns = [
             col for col in self.dataset.columns if col not in ignore_columns]
 
-        for col in columns:
-            result[col] = self.columnInfo(
-                col, get_values=get_values, get_values_method=get_values_method, get_values_size=get_values_size)
+       
+        if output_as == 'dict':
+            result = {}
+            for col in columns:
+                result[col] = self.columnInfo(
+                    col, get_values=get_values, get_values_method=get_values_method, get_values_size=get_values_size)
+                
+            return result
+        elif output_as == 'list':
+            result = []
+            for col in columns:
+                dict_res = self.columnInfo(
+                    col, get_values=get_values, get_values_method=get_values_method, get_values_size=get_values_size)
+                dict_res.update({'column' : col})
+                result.append(dict_res)
+            return result
+        else:
+            raise ValueError('The output must be one of the following : dict | list')
 
-        return result

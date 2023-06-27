@@ -73,7 +73,7 @@ class DataClean():
             self.originalDataset = pd.DataFrame(dataset)
         else:
             print("Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
-
+        self.getColType()
         self._getUniqueFeatures()
         self._nullPercFeatures()
 
