@@ -264,11 +264,11 @@ class Analytics(DataClean):
 
         # Missing values
         info['stats'].update(
-            {'missing_values': self.dataset[column][self.dataset[column] == ''].count()})
+            {'missing_values': int(self.dataset[column][self.dataset[column] == ''].count())})
 
         # Null values
         info['stats'].update(
-            {'null_values': self.dataset[column][self.dataset[column].isnull()].count()})
+            {'null_values': int(self.dataset[column][self.dataset[column].isnull()].count())})
 
         # Get outliers
         if column in self.numeric_cols:
