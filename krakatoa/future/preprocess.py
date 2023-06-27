@@ -11,9 +11,7 @@ Data preprocessing (:mod:`krakatoa.future.preprocess`)
 
 import pandas as pd
 from pandas.api.types import is_string_dtype, is_numeric_dtype, is_categorical_dtype
-import numpy as np
-import sys
-sys.path.append("../../")
+import numpy as npD
 
 
 from sklearn.model_selection import train_test_split
@@ -75,7 +73,7 @@ class DataClean():
             self.originalDataset = pd.DataFrame(dataset)
         else:
             print("Error! Select the right Dataset type and set it to load_from variable ('dataframe', 'dict')")
-
+        self.getColType()
         self._getUniqueFeatures()
         self._nullPercFeatures()
 
@@ -84,7 +82,6 @@ class DataClean():
         # TODO precisamos ainda identificar colunas de outros tipos , como data e quando é numerica e categorica
         catCols = []
         numCols = []
-        
 
         for k, v in self.dataset.dtypes.items():
             if v in ['object', 'category']:
@@ -209,7 +206,6 @@ class DataClean():
 
         return self.dataset
 
-
     def pipeline(self, steps):
 
         _config = {
@@ -252,5 +248,13 @@ class DataClean():
         
         return self.dataset
 
+    def setColumnType(self, col:str, col_type:str):
 
+        try:
+            self.dataset[col] = self.dataset[col].astype(col_type)
+            self.getColType()
+            return True
+        except Exception as e:
+            print(e)
+            return False
        
