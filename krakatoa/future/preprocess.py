@@ -82,15 +82,38 @@ class DataClean():
         # TODO precisamos ainda identificar colunas de outros tipos , como data e quando é numerica e categorica
         catCols = []
         numCols = []
+        datCols = []
+        floatCols = []
+        intCols = []
+        otherCols = []
 
         for k, v in self.dataset.dtypes.items():
             if v in ['object', 'category']:
-                catCols.append(k)
+                # Try to set datetime data
+                try:
+                    self.dataset[k] = pd.to_datetime(self.dataset[k])
+                    datCols.append(k)
+                except:
+                    pass
+                    catCols.append(k)
             elif k != self.target:
-                numCols.append(k)
+                if v in ['float64', 'float32']:
+                    floatCols.append(k)
+                    numCols.append(k)
+                elif v in ['int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8']:
+                    intCols.append(k)
+                    numCols.append(k)
+                else:
+                    otherCols.append(k)
+                
+                
 
         self.category_cols = catCols
         self.numeric_cols = numCols
+        self.integer_cols = intCols
+        self.float_cols = floatCols
+        self.other_cols = otherCols
+        self.datetime_cols = datCols
         self.target_col = [self.target]
  
     def splitTrainTest(self):

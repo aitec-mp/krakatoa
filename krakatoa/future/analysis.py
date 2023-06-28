@@ -227,7 +227,8 @@ class Analytics(DataClean):
 
         return outliers
 
-    def columnInfo(self, column: str, get_values: bool = True, get_values_method: str = 'head', get_values_size: int = 10):
+    def columnInfo(self, column: str, get_values: bool = True, get_values_method: str = 'head',
+                   get_values_size: int = 10, most_common_size: int = 2):
 
         info = {
             'type': str(),
@@ -247,13 +248,23 @@ class Analytics(DataClean):
         total_size = count.sum()
         perc_count = (count[count_sort_ind]/total_size)*100
 
-        # top 10 most common
-        for name, perc in zip(ordered_values, perc_count):
+        # top - most common values
+        perc_sum = 0
+        for k, (name, perc) in enumerate(zip(ordered_values, perc_count)):
+            # check size
+            if k >= most_common_size:
+                # Calculate others
+                info['stats']['most_common'].append(
+                    {'name': 'other', 'perc': 100-round(perc_sum, 2)})
+                break
+
             if 'most_common' not in info['stats'].keys():
                 info['stats']['most_common'] = []
 
             info['stats']['most_common'].append(
                 {'name': name, 'perc': round(perc, 2)})
+
+            perc_sum += perc
 
         # unique values count
         info['stats'].update({'unique': self.dataset[column].nunique()})
@@ -285,30 +296,33 @@ class Analytics(DataClean):
             else:
                 info['values'] = list(
                     self.dataset[column].head(get_values_size).values)
-                
+
         return info
 
-    def allColumnInfo(self, get_values: bool = True, get_values_method: str = 'head', get_values_size: int = 10, ignore_columns: list = [], output_as: str = 'dict'):
+    def allColumnInfo(self, get_values: bool = True, get_values_method: str = 'head',
+                      get_values_size: int = 10, ignore_columns: list = [],
+                      most_common_size: int = 2, output_as: str = 'dict'):
 
         columns = [
             col for col in self.dataset.columns if col not in ignore_columns]
 
-       
         if output_as == 'dict':
             result = {}
             for col in columns:
                 result[col] = self.columnInfo(
-                    col, get_values=get_values, get_values_method=get_values_method, get_values_size=get_values_size)
-                
+                    col, get_values=get_values, get_values_method=get_values_method, get_values_size=get_values_size,
+                    most_common_size=most_common_size)
+
             return result
         elif output_as == 'list':
             result = []
             for col in columns:
                 dict_res = self.columnInfo(
-                    col, get_values=get_values, get_values_method=get_values_method, get_values_size=get_values_size)
-                dict_res.update({'column' : col})
+                    col, get_values=get_values, get_values_method=get_values_method, get_values_size=get_values_size,
+                    most_common_size=most_common_size)
+                dict_res.update({'column': col})
                 result.append(dict_res)
             return result
         else:
-            raise ValueError('The output must be one of the following : dict | list')
-
+            raise ValueError(
+                'The output must be one of the following : dict | list')
