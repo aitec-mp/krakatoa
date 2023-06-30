@@ -16,7 +16,6 @@ import numpy as npD
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, MaxAbsScaler
-from sklearn.preprocessing import OrdinalEncoder
 from krakatoa.future.evaluate import countNull
 from sklearn.preprocessing import OneHotEncoder
 
@@ -59,10 +58,16 @@ def scale(dataset, columns, scaler='min_max'):
 # Class designed to dataset management   
 class DataClean():
 
-    def __init__(self, target):
+    def __init__(self, target=None):
         self.dataset = pd.DataFrame()
         self.originalDataset = pd.DataFrame()
         self.target = target
+    
+    def _checkTarget(self):
+        if self.target is None:
+            raise ValueError('Target must be set in order to execute that function')
+
+        return True
 
     def loadDataset(self, dataset, load_from="dataframe"):
         if load_from == "dataframe":
@@ -88,15 +93,17 @@ class DataClean():
         otherCols = []
 
         for k, v in self.dataset.dtypes.items():
+            # Check for non numeric
             if v in ['object', 'category']:
                 # Try to set datetime data
                 try:
-                    self.dataset[k] = pd.to_datetime(self.dataset[k])
+                    # self.dataset[k] = pd.to_datetime(self.dataset[k], format='%d-%m-%Y %H:%M:%S.%f')
+                    self.dataset[k] = pd.to_datetime(self.dataset[k], infer_datetime_format=True)
                     datCols.append(k)
                 except:
                     pass
                     catCols.append(k)
-            elif k != self.target:
+            else:
                 if v in ['float64', 'float32']:
                     floatCols.append(k)
                     numCols.append(k)
@@ -106,17 +113,20 @@ class DataClean():
                 else:
                     otherCols.append(k)
                 
-                
-
         self.category_cols = catCols
         self.numeric_cols = numCols
         self.integer_cols = intCols
         self.float_cols = floatCols
         self.other_cols = otherCols
         self.datetime_cols = datCols
-        self.target_col = [self.target]
- 
+        if self.target is not None:
+            self.target_col = [self.target]
+        else:
+            self.target_col = []
+
     def splitTrainTest(self):
+
+        self._checkTarget()
 
         X = self.dataset.drop(columns=[self.target])
         y = self.dataset[self.target]
@@ -177,7 +187,8 @@ class DataClean():
         return self.dataset
 
     def cleanUnique(self, threshold=500):
-
+        
+        self._checkTarget()
         self._getUniqueFeatures()
 
         dataset = self.dataset.copy()
@@ -281,3 +292,5 @@ class DataClean():
             print(e)
             return False
        
+    def setTarget(self, target):
+        self.target = target

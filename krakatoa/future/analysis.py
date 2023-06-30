@@ -171,7 +171,7 @@ class Analytics(DataClean):
             res_diagnostic['unique_data'] = unique_diagnostic
 
         # Check for valid target
-        if not self.target:
+        if self.target is None:
             res_diagnostic['target'] = False
         else:
             if self.target not in set(self.dataset.columns):
