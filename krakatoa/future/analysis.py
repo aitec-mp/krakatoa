@@ -11,6 +11,7 @@ Data Analysis (:mod:`krakatoa.future.analysis`)
 
 import pandas as pd
 import numpy as np
+import seaborn as sns
 from .preprocess import DataClean
 
 # ============================================================
@@ -18,7 +19,7 @@ from .preprocess import DataClean
 
 class Analytics(DataClean):
 
-    def __init__(self, target):
+    def __init__(self, target=None):
         super().__init__(target)
         pass
 
@@ -57,7 +58,7 @@ class Analytics(DataClean):
                 x = list(values.keys().astype("string"))
                 y = list(values.values)
 
-        result = {'data_type': data_type, 'x': list(x), 'y': list(y)}
+        result = {'type': data_type, 'label': list(x), 'values': list(y)}
         return result
 
     def targetDist(self, target):
@@ -134,8 +135,10 @@ class Analytics(DataClean):
 
         if get_dist:
             for col in described.keys():
-
-                self.described[col]['dist'] = self.columnDist(col)
+                try:
+                    self.described[col]['dist'] = self.columnDist(col)
+                except:
+                    self.described[col]['dist'] = {}
 
         return self.described
 
@@ -326,3 +329,46 @@ class Analytics(DataClean):
         else:
             raise ValueError(
                 'The output must be one of the following : dict | list')
+
+    def countPlot(self, column: str, plot: bool = False, **kwargs):
+
+        try:
+            # Output value counts
+            df = self.dataset[self.dataset[column].notnull()][column]
+            count = df.value_counts().to_dict()
+            label, values = zip(*count.items())
+
+            # Plot chart
+            if plot:
+                sns.countplot(x=df, **kwargs)
+
+            return {
+                'label': list(label),
+                'values': list(values)
+            }
+        except:
+            raise ValueError(
+                'Could not count the data values. Check the data type and if the values are valids!')
+
+    def histPlot(self, column: str, plot: bool = False, **kwargs):
+        df = self.dataset[self.dataset[column].notnull()][column]
+
+        y, x = np.histogram(df)
+
+        if plot:
+            sns.histplot(x=df, **kwargs)
+
+        return {
+            'label': list(x),
+            'values': list(y)
+        }
+
+    def boxPlot(self, column: str, plot: bool = False, method: str = 'midpoint', **kwargs):
+        df = self.dataset[self.dataset[column].notnull()][column]
+
+        iqr = self.iqrOutliers(column, method=method)
+
+        if plot:
+            sns.boxplot(df, **kwargs)
+
+        return iqr

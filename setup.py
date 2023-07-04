@@ -16,7 +16,8 @@ setup(
           'scikit-learn',
           'numpy',
           'pandas',
-          'xgboost'
+          'xgboost',
+          'seaborn'
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',     
