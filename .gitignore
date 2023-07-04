@@ -8,3 +8,5 @@ krakatoa/examples/
 krakatoa/.vscode/
 krakatoa/.ipynb_checkpoints/
 example
+
+venv

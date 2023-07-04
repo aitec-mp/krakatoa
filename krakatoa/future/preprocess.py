@@ -11,7 +11,7 @@ Data preprocessing (:mod:`krakatoa.future.preprocess`)
 
 import pandas as pd
 from pandas.api.types import is_string_dtype, is_numeric_dtype, is_categorical_dtype
-import numpy as npD
+import numpy as np
 
 
 from sklearn.model_selection import train_test_split
