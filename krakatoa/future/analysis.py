@@ -142,46 +142,6 @@ class Analytics(DataClean):
 
         return self.described
 
-    def diagnostic(self):
-        '''
-        Disclaimer!
-
-        This function returns some paremeters like -> 'missing', 'unique', 'target'
-
-        When those returns as False, means that they are not ok and need attention!
-        The True flag, means that there are no missing data, the target is solid or there are no unique columns!
-        '''
-
-        res_diagnostic = {'missing': True, 'unique': True, 'target': True}
-        # Check for missing data
-        null_data = self._nullPercFeatures()
-        null_diagnostic = null_data[null_data['count'] > 0][[
-            'variable', 'count']].to_dict('records')
-
-        if len(null_diagnostic) > 0:
-            null_diagnostic_items = {}
-            for item in null_diagnostic:
-                null_diagnostic_items[item['variable']] = item['count']
-            res_diagnostic['missing'] = False
-            res_diagnostic['missing_data'] = null_diagnostic_items
-
-        # Check for unique data
-        unique_data = self.dataset.nunique()
-        unique_diagnostic = unique_data[unique_data == 1].to_dict()
-
-        if len(unique_diagnostic.keys()) > 1:
-            res_diagnostic['unique'] = False
-            res_diagnostic['unique_data'] = unique_diagnostic
-
-        # Check for valid target
-        if self.target is None:
-            res_diagnostic['target'] = False
-        else:
-            if self.target not in set(self.dataset.columns):
-                res_diagnostic['target'] = False
-
-        return res_diagnostic
-
     def iqrOutliers(self, column: str, method: str = 'midpoint'):
 
         if column in self.numeric_cols:
@@ -229,6 +189,59 @@ class Analytics(DataClean):
                 outliers[col] = iqr_outliers
 
         return outliers
+
+    def diagnostic(self):
+        '''
+        Disclaimer!
+
+        This function returns some paremeters like -> 'missing', 'unique', 'target'
+
+        When those returns as False, means that they are not ok and need attention!
+        The True flag, means that there are no missing data, the target is solid or there are no unique columns!
+        '''
+
+        (rows, cols) = self.dataset.shape
+        res_diagnostic = {'missing': True, 'unique': True,
+                          'target': True, 'outliers': True, 'rows': rows, 'cols': cols}
+        
+        # Check for missing data
+        null_data = self._nullPercFeatures()
+        null_diagnostic = null_data[null_data['count'] > 0][[
+            'variable', 'count']].to_dict('records')
+
+        if len(null_diagnostic) > 0:
+            null_diagnostic_items = {}
+            for item in null_diagnostic:
+                null_diagnostic_items[item['variable']] = item['count']
+            res_diagnostic['missing'] = False
+            res_diagnostic['missing_data'] = null_diagnostic_items
+
+        # Check for unique data
+        unique_data = self.dataset.nunique()
+        unique_diagnostic = unique_data[unique_data == 1].to_dict()
+
+        if len(unique_diagnostic.keys()) > 1:
+            res_diagnostic['unique'] = False
+            res_diagnostic['unique_data'] = unique_diagnostic
+
+        # Check for valid target
+        if self.target is None:
+            res_diagnostic['target'] = False
+        else:
+            if self.target not in set(self.dataset.columns):
+                res_diagnostic['target'] = False
+
+        # Check for outliers
+        for col in self.dataset.columns:
+            try:
+                outliers = self.iqrOutliers(column=col)
+                if outliers['has_outliers']:
+                    res_diagnostic['outliers'] = False
+                    break
+            except:
+                pass
+
+        return res_diagnostic
 
     def columnInfo(self, column: str, get_values: bool = True, get_values_method: str = 'head',
                    get_values_size: int = 10, most_common_size: int = 2):
