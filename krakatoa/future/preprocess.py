@@ -294,3 +294,20 @@ class DataClean():
        
     def setTarget(self, target):
         self.target = target
+
+    def consistFormat(self, target='mongodb'):
+
+        if target == 'mongodb':
+
+            # Check for NaT values in 
+            for col in self.datetime_cols:
+                if self.dataset[col].isnull().sum() > 0:
+                    self.dataset[col] = self.dataset[col].astype('object').where(self.dataset[col].notnull(), None)
+
+            # Transform dataframe to list and records
+            records = self.dataset.to_dict('records')
+
+            return records
+        
+        else:
+            raise ValueError('Not implemented!')
