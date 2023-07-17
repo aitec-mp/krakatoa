@@ -10,7 +10,7 @@ Data preprocessing (:mod:`krakatoa.future.preprocess`)
 #============================================================
 
 import pandas as pd
-from pandas.api.types import is_string_dtype, is_numeric_dtype, is_categorical_dtype
+from pandas.api.types import is_string_dtype, is_numeric_dtype, is_object_dtype, is_categorical_dtype, is_datetime64_dtype, is_float_dtype, is_integer_dtype
 import numpy as np
 
 
@@ -91,27 +91,41 @@ class DataClean():
         floatCols = []
         intCols = []
         otherCols = []
+        dtype = {}
 
         for k, v in self.dataset.dtypes.items():
             # Check for non numeric
-            if v in ['object', 'category']:
+            # if v in ['object', 'category']:
+            if is_categorical_dtype(self.dataset[k]) or is_object_dtype(self.dataset[k]):
                 # Try to set datetime data
                 try:
                     # self.dataset[k] = pd.to_datetime(self.dataset[k], format='%d-%m-%Y %H:%M:%S.%f')
                     self.dataset[k] = pd.to_datetime(self.dataset[k], infer_datetime_format=True)
                     datCols.append(k)
+                    dtype[k] = 'datetime'
                 except:
-                    pass
                     catCols.append(k)
+                    dtype[k] = 'string'
+
+            # elif is_numeric_dtype(self.dataset[k]):
+            #     numCols.append(k)
+                # if v in ['float64', 'float32']:
+            elif is_float_dtype(self.dataset[k]):
+                floatCols.append(k)
+                numCols.append(k)
+                dtype[k] = 'float'
+                # elif v in ['int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8']:
+            elif is_integer_dtype(self.dataset[k]):
+                intCols.append(k)
+                numCols.append(k)
+                dtype[k] = 'integer'
+                    
+            elif is_datetime64_dtype(self.dataset[k]):
+                datCols.append(k)
+                dtype[k] = 'datetime'
             else:
-                if v in ['float64', 'float32']:
-                    floatCols.append(k)
-                    numCols.append(k)
-                elif v in ['int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8']:
-                    intCols.append(k)
-                    numCols.append(k)
-                else:
-                    otherCols.append(k)
+                otherCols.append(k)
+                dtype[k] = 'other'
                 
         self.category_cols = catCols
         self.numeric_cols = numCols
@@ -119,6 +133,7 @@ class DataClean():
         self.float_cols = floatCols
         self.other_cols = otherCols
         self.datetime_cols = datCols
+        self.dtype = dtype
         if self.target is not None:
             self.target_col = [self.target]
         else:
