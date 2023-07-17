@@ -37,13 +37,13 @@ def splitDataset(x, y, test_size=0.3, random_state=0):
     
     return x_train, x_test, y_train, y_test
 
-def scale(dataset, columns, scaler='min_max'):
-    
+def scale(dataset, columns, scaler='min_max', **kwargs):
+
     scalers = {
-        'min_max' : MinMaxScaler(),
-        'max_abs' : MaxAbsScaler(),
-        'robust' : RobustScaler(),
-        'standard' : StandardScaler()
+        'min_max' : MinMaxScaler(**kwargs),
+        'max_abs' : MaxAbsScaler(**kwargs),
+        'robust' : RobustScaler(**kwargs),
+        'standard' : StandardScaler(**kwargs)
         }
     
     cur_scaler = scalers.get(scaler)
@@ -247,7 +247,7 @@ class DataClean():
 
         return self.dataset
 
-    def encodeColumns(self, columns, encoder='one_hot_encoder'):
+    def encodeColumns(self, columns: list, encoder='one_hot_encoder'):
         
         for col in columns:
 
@@ -280,6 +280,15 @@ class DataClean():
         concat_df = pd.concat([self.dataset, hot_df], axis=1).drop(columns=cat_cols, axis=1)
         self.oneHotEncoding = hot
         self.dataset = concat_df
+
+        return self.dataset
+
+    def scaleColumns(self, columns: list, scaler: str='min_max', **kwargs):
+
+        res_scale = scale(self.dataset, columns=columns, scaler=scaler, **kwargs)
+
+        self.dataset = res_scale["dataset"]
+        self.scaler = res_scale["scaler"]
 
         return self.dataset
 
