@@ -17,7 +17,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, MaxAbsScaler
 from krakatoa.future.evaluate import countNull
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, LabelEncoder
 
 #============================================================
 def changeColType(df, columns, newType):
@@ -54,6 +54,31 @@ def scale(dataset, columns, scaler='min_max'):
         "dataset" : dataset
     }
 
+def encode(dataset, column, encoder='one_hot_encoder', **kwargs):
+    encoders = {
+        'one_hot_encoder' : OneHotEncoder(**kwargs),
+        'label_encoder' : LabelEncoder(),
+        'ordinal_encoder' : OrdinalEncoder(**kwargs)
+        }
+    
+    cur_encoder = encoders.get(encoder, None)
+
+    if cur_encoder is None:
+        raise ValueError(f'Encoder is not valid! Choose one of the following: {list(encoders.keys())}')
+
+    if encoder == 'one_hot_encoder':
+        transformed = cur_encoder.fit_transform(dataset[[column]])
+        new_df = pd.DataFrame(transformed.toarray(), columns=cur_encoder.get_feature_names_out())
+        dataset = dataset.join(new_df)
+        dataset.drop(columns=[column], inplace=True)
+
+    else:
+        dataset[column] = cur_encoder.fit_transform(dataset[[column]])
+    
+    return {
+        "encoder" : cur_encoder,
+        "dataset" : dataset
+    }
 
 # Class designed to dataset management   
 class DataClean():
@@ -221,6 +246,18 @@ class DataClean():
         self.getColType()
 
         return self.dataset
+
+    def encodeColumns(self, columns, encoder='one_hot_encoder'):
+        
+        for col in columns:
+
+            res_encoder = encode(self.dataset, column=col, encoder=encoder)
+
+        self.dataset = res_encoder["dataset"]
+        self.encoder = res_encoder["encoder"]
+
+        return self.dataset
+    
 
     def getDummies(self):
 
