@@ -24,7 +24,8 @@ def changeColType(df, columns, newType):
     
     for col in columns:
         df[col] = df[col].astype(newType)
-        
+    
+
     return df
 
 def splitDataset(x, y, test_size=0.3, random_state=0):
@@ -198,6 +199,7 @@ class DataClean():
     def dropColumns(self, columns):
 
         self.dataset.drop(columns=columns, inplace=True)
+        self.getColType()
         return self.dataset
     
     def dropNaColumns(self, threshold=50):
@@ -205,6 +207,8 @@ class DataClean():
         percNull = self._nullPercFeatures()
 
         self.dataset.drop(columns=list(percNull[percNull > threshold].keys()), inplace=True)
+        self.getColType()
+
         return self.dataset
     
     def fillNa(self, strategy='mean'): #mean / most frequent | drop 
@@ -241,7 +245,6 @@ class DataClean():
 
         self.dataset = dataset
 
-
         # refresh column data in self
         self.getColType()
 
@@ -256,28 +259,28 @@ class DataClean():
         self.dataset = res_encoder["dataset"]
         self.encoder = res_encoder["encoder"]
 
-        return self.dataset
-    
+        return self.dataset   
 
-    def getDummies(self):
+    def getDummies(self, columns = None):
 
         # self.dataset = pd.get_dummies(self.dataset)
         # return self.dataset
         self.dataset.reset_index(inplace=True, drop=True)
 
-        cat_cols = self.category_cols
-
         # Instancia e fit one hot encoder
         hot = OneHotEncoder(handle_unknown='ignore', sparse=False)
-        hot.fit(self.dataset[cat_cols])
 
-        hot_ds = hot.transform(self.dataset[cat_cols])
+        if columns is None:
+            columns = self.category_cols        
+
+        hot.fit(self.dataset[columns])
+        hot_ds = hot.transform(self.dataset[columns])
 
         # Cria dataframe transformada
-        hot_df = pd.DataFrame(hot_ds, columns = hot.get_feature_names_out(input_features=cat_cols))
+        hot_df = pd.DataFrame(hot_ds, columns = hot.get_feature_names_out(input_features=columns))
 
         # Concatena o dataframe do one hot com o original
-        concat_df = pd.concat([self.dataset, hot_df], axis=1).drop(columns=cat_cols, axis=1)
+        concat_df = pd.concat([self.dataset, hot_df], axis=1).drop(columns=columns, axis=1)
         self.oneHotEncoding = hot
         self.dataset = concat_df
 
