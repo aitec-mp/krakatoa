@@ -1,6 +1,7 @@
 .vscode/
 .ipynb_checkpoints/
 __pychache__/
+*/__pychache__/
 dist
 build
 krakatoa.egg-info
