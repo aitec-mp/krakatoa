@@ -388,13 +388,11 @@ class Analytics(DataClean):
 
         return iqr
 
-    def pca(self, **kwargs):
+    def pca(self, n_components=1, **kwargs):
 
-        pca = PCA(**kwargs)
+        pca = PCA(n_components=n_components, **kwargs)
 
         pca.fit(self.dataset)
 
-
         return pca
-
 
