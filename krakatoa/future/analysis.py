@@ -14,6 +14,8 @@ import numpy as np
 import seaborn as sns
 from .preprocess import DataClean
 
+from sklearn.decomposition import PCA
+
 # ============================================================
 
 
@@ -385,3 +387,12 @@ class Analytics(DataClean):
             sns.boxplot(df, **kwargs)
 
         return iqr
+
+    def pca(self, n_components=1, **kwargs):
+
+        pca = PCA(n_components=n_components, **kwargs)
+
+        pca.fit(self.dataset)
+
+        return pca
+
