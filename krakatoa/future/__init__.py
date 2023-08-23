@@ -11,6 +11,7 @@ from . import evaluate, preprocess
 __all__ = ['evaluate', 
            'preprocess',
            'analysis',
-           'experiment'
+           'experiment',
+           'split'
            ]
 
