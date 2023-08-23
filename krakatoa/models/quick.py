@@ -157,6 +157,18 @@ class Regressor():
         
         return pd.DataFrame(results)
     
+    def customRegression(self, x, y, models = ['boost', 'linear', 'tree'], selMode='type',  score=['r2'], cv=5):
+        
+        models = getModels(mode='regression', modelClasses=models, selMode=selMode)
+        
+        scoring = []
+        for s in score:
+            scoring.append(self._regression_scores[s]['name'])
+            
+        results = self._runModels(models, x, y, scoring, cv)
+        
+        return pd.DataFrame(results)
+    
 
 #============================================================
 # Classification Functions
