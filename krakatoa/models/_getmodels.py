@@ -26,10 +26,10 @@ def getModels(mode, modelClasses, selMode = 'type', random_state=0):
         print('No configuration was selected')
         config = None
 
-
     if config != None:
 
         configVals = [x for x in config.values()] 
+
         result = []
 
         if selMode in ['type', 'name']:

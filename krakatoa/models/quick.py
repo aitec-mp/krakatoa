@@ -9,12 +9,15 @@ Quick Models(:mod:`krakatoa.models.quick`)
 # Imports
 #============================================================
 
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import cross_validate, train_test_split, cross_val_score
+
 
 from ._getmodels import getModels
 from ._metrics import getScores
+from ._model_selection import getModel
 import pandas as pd
 
+import time
 #============================================================
 # Regression Functions
 #============================================================
@@ -24,25 +27,74 @@ class Regressor():
 
         self._regression_scores = getScores('regression')
 
-    def _crossvalidate(self, estimator, x, y, scoring, cv=5):
 
-        result = cross_validate(estimator, x, y, scoring=scoring, cv=cv, n_jobs=-1)
-        
-        return result
-
-    def _runModels(self, models, x, y, scoring, cv):
+    def _runModels(self, models, x, y, scoring, cv, model_selection='cross_validate', metrics = ['r2']):
         results = {'estimator' : [], 'fit_time' : [], 'score_time' : []}
-        
-        for model in models:
-            res = self._crossvalidate(model['estimator'], x, y, scoring, cv)
-            
-            results['estimator'].append(model['name'])
 
-            for k, v in res.items():
-                if k not in results.keys():
-                    results[k] = []
-                    
-                results[k].append(v.mean())
+        # Model selection part
+        res_model_selection = getModel(model=model_selection)
+
+        # model_selection_function
+        modelSelFunc = res_model_selection['f']
+        method = res_model_selection['method']
+        if method == 0:
+            # For methods that returns x_train, x_test, y_train, y_test
+            X_train, X_test, y_train, y_test = modelSelFunc(x, y)
+            for model in models:
+                results['estimator'].append(model['name'])
+                # Fit time
+                fit_start_time = time.perf_counter()
+                estimator = model['estimator']
+                estimator.fit(X_train, y_train)
+                fit_end_time = time.perf_counter()
+
+                results['fit_time'].append(fit_end_time - fit_start_time)
+
+                y_predicted = estimator.predict(X_test)
+
+                dict_metrics = getScores('regression')
+                metric_start_time = time.perf_counter()
+
+                for metric in metrics:
+                    dict_metric = dict_metrics.get(metric, None)
+                    if dict_metric == None:
+                        break
+
+                    res_metric = dict_metric['f'](y_test, y_predicted)
+                    metric_name = f'{metric}_score'
+                    results[metric_name] = res_metric
+
+                metric_end_time = time.perf_counter()
+                metric_time = metric_end_time - metric_start_time
+                results['score_time'] = metric_time
+
+        elif method == 1:
+            # Must improve implementation in order to use other KFolds methods such as Group and Stratified
+            folds = modelSelFunc()
+            for model in models:
+
+                res = cross_validate(model['estimator'], x, y, scoring=scoring, cv=folds, n_jobs=-1)
+                results['estimator'].append(model['name'])
+
+                for k, v in res.items():
+                    if k not in results.keys():
+                        results[k] = []
+                        
+                    results[k].append(v.mean())
+
+
+        elif method == 2:
+
+            for model in models:
+
+                res = modelSelFunc(model['estimator'], x, y, scoring=scoring, cv=cv, n_jobs=-1)
+                results['estimator'].append(model['name'])
+
+                for k, v in res.items():
+                    if k not in results.keys():
+                        results[k] = []
+                        
+                    results[k].append(v.mean())
         
         return results
 
@@ -157,7 +209,7 @@ class Regressor():
         
         return pd.DataFrame(results)
     
-    def customRegression(self, x, y, models = ['boost', 'linear', 'tree'], selMode='type',  score=['r2'], cv=5):
+    def customRegression(self, x, y, models = ['boost', 'linear', 'tree'], selMode='type', score=['r2'], cv=5, model_selection='cross_validate'):
         
         models = getModels(mode='regression', modelClasses=models, selMode=selMode)
         
@@ -165,7 +217,7 @@ class Regressor():
         for s in score:
             scoring.append(self._regression_scores[s]['name'])
             
-        results = self._runModels(models, x, y, scoring, cv)
+        results = self._runModels(models, x, y, scoring, cv, model_selection=model_selection, metrics=score)
         
         return pd.DataFrame(results)
     
