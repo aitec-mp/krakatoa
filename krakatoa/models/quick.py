@@ -40,6 +40,7 @@ class Regressor():
         if method == 0:
             # For methods that returns x_train, x_test, y_train, y_test
             X_train, X_test, y_train, y_test = modelSelFunc(x, y)
+            dict_metrics = getScores('regression')
             for model in models:
                 results['estimator'].append(model['name'])
                 # Fit time
@@ -52,9 +53,7 @@ class Regressor():
 
                 y_predicted = estimator.predict(X_test)
 
-                dict_metrics = getScores('regression')
                 metric_start_time = time.perf_counter()
-
                 for metric in metrics:
                     dict_metric = dict_metrics.get(metric, None)
                     if dict_metric == None:
@@ -62,7 +61,9 @@ class Regressor():
 
                     res_metric = dict_metric['f'](y_test, y_predicted)
                     metric_name = f'{metric}_score'
-                    results[metric_name] = res_metric
+                    if metric_name not in results.keys():
+                        results[metric_name] = []
+                    results[metric_name].append(res_metric)
 
                 metric_end_time = time.perf_counter()
                 metric_time = metric_end_time - metric_start_time
