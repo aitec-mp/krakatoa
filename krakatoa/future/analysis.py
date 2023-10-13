@@ -382,8 +382,9 @@ class Analytics(DataClean):
                 if n > 0:
                     if interval_type == 'list':
                         new_x.append([x[n-1], i])
+                        
                     elif interval_type == 'str':
-                        new_x.append(f'{x[n-1]} - i')
+                        new_x.append(f'{x[n-1]} - {i}')
             x = new_x
 
         if plot:
