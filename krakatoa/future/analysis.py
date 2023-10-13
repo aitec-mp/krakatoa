@@ -131,7 +131,7 @@ class Analytics(DataClean):
             data=[values_unique], columns=columns_unique, index=['nunique'])
 
         described = pd.concat([pdDescribe, dfDtypes, dfUnique])
-
+        print(described)
         # Transform to dict
         self.described = described.to_dict()
 
@@ -303,8 +303,13 @@ class Analytics(DataClean):
         if column in self.numeric_cols:
             info['outliers'] = self.iqrOutliers(column)
 
-            # get describe
-            info['stats'].update(self.dataset[column].describe())
+            # get describe - updated to include median
+            # info['stats'].update(self.dataset[column].describe())
+            describe_res = self.dataset[column].describe()
+
+            describe_res['median'] = np.median(self.dataset[column])
+
+            info['stats'].update(describe_res)
 
         # get column values
         if get_values:
