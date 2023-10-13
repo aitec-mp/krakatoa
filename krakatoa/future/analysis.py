@@ -370,10 +370,18 @@ class Analytics(DataClean):
             raise ValueError(
                 'Could not count the data values. Check the data type and if the values are valids!')
 
-    def histPlot(self, column: str, plot: bool = False, **kwargs):
+    def histPlot(self, column: str, plot: bool = False, with_interval: bool = False,  **kwargs):
         df = self.dataset[self.dataset[column].notnull()][column]
 
         y, x = np.histogram(df)
+
+        if with_interval:
+            new_x = []
+
+            for n, i in enumerate(x):
+                if n > 0:
+                    new_x.append([x[n-1], i])
+            x = new_x
 
         if plot:
             sns.histplot(x=df, **kwargs)
