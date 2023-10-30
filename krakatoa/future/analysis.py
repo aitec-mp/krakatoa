@@ -298,6 +298,11 @@ class Analytics(DataClean):
         # Null values
         info['stats'].update(
             {'null_values': int(self.dataset[column][self.dataset[column].isnull()].count())})
+        
+        # Count
+        info['stats'].update(
+            {'count' : len(self.dataset[column])}
+        )
 
         # Get outliers
         if column in self.numeric_cols:
