@@ -72,7 +72,7 @@ class Regressor():
 
         elif method == 1:
             # Must improve implementation in order to use other KFolds methods such as Group and Stratified
-            folds = modelSelFunc()
+            folds = modelSelFunc(**model_selection_params)
             for model in models:
 
                 res = cross_validate(model['estimator'], x, y, scoring=scoring, cv=folds, n_jobs=-1)
