@@ -28,7 +28,7 @@ class Regressor():
         self._regression_scores = getScores('regression')
 
 
-    def _runModels(self, models, x, y, scoring, cv, model_selection='cross_validate', metrics = ['r2']):
+    def _runModels(self, models, x, y, scoring, cv, model_selection='cross_validate', metrics = ['r2'], model_selection_params = {}):
         results = {'estimator' : [], 'fit_time' : [], 'score_time' : []}
 
         # Model selection part
@@ -39,7 +39,8 @@ class Regressor():
         method = res_model_selection['method']
         if method == 0:
             # For methods that returns x_train, x_test, y_train, y_test
-            X_train, X_test, y_train, y_test = modelSelFunc(x, y)
+            
+            X_train, X_test, y_train, y_test = modelSelFunc(x, y, **model_selection_params)
             dict_metrics = getScores('regression')
             for model in models:
                 results['estimator'].append(model['name'])
@@ -82,7 +83,6 @@ class Regressor():
                         results[k] = []
                         
                     results[k].append(v.mean())
-
 
         elif method == 2:
 
@@ -210,7 +210,7 @@ class Regressor():
         
         return pd.DataFrame(results)
     
-    def customRegression(self, x, y, models = ['boost', 'linear', 'tree'], selMode='type', score=['r2'], cv=5, model_selection='cross_validate'):
+    def customRegression(self, x, y, models = ['boost', 'linear', 'tree'], selMode='type', score=['r2'], cv=5, model_selection='cross_validate', model_selection_params = {}):
         
         models = getModels(mode='regression', modelClasses=models, selMode=selMode)
         
@@ -218,7 +218,7 @@ class Regressor():
         for s in score:
             scoring.append(self._regression_scores[s]['name'])
             
-        results = self._runModels(models, x, y, scoring, cv, model_selection=model_selection, metrics=score)
+        results = self._runModels(models, x, y, scoring, cv, model_selection=model_selection, metrics=score, model_selection_params=model_selection_params)
         
         return pd.DataFrame(results)
     
