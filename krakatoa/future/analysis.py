@@ -131,7 +131,6 @@ class Analytics(DataClean):
             data=[values_unique], columns=columns_unique, index=['nunique'])
 
         described = pd.concat([pdDescribe, dfDtypes, dfUnique])
-        print(described)
         # Transform to dict
         self.described = described.to_dict()
 
@@ -259,7 +258,13 @@ class Analytics(DataClean):
 
         # Implement method to verify column types
         # Getting most common values
-        values, count = np.unique(self.dataset[column], return_counts=True)
+        #Workaround, to avoid numpy sort error for mixed types
+        if info['type'] == 'object':
+            column_values = self.dataset[column].astype(str)
+        else:
+            column_values = self.dataset[column]
+
+        values, count = np.unique(column_values, return_counts=True)
         count_sort_ind = np.argsort(-count)
 
         ordered_values = values[count_sort_ind]
