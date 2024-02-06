@@ -88,6 +88,7 @@ class DataClean():
         self.dataset = pd.DataFrame()
         self.originalDataset = pd.DataFrame()
         self.target = target
+        self.scaler = dict()
     
     def _checkTarget(self):
         if self.target is None:
@@ -291,7 +292,11 @@ class DataClean():
         res_scale = scale(self.dataset, columns=columns, scaler=scaler, **kwargs)
 
         self.dataset = res_scale["dataset"]
-        self.scaler = res_scale["scaler"]
+        
+        #Check if scaler already created
+
+        for col in columns:
+            self.scaler.update({col : res_scale['scaler']})
 
         return self.dataset
 

@@ -9,6 +9,7 @@ krakatoa/examples/
 krakatoa/.vscode/
 krakatoa/.ipynb_checkpoints/
 krakatoa/future/__pychache__
+krakatoa/future/__pychache__/
 example
 
 venv
