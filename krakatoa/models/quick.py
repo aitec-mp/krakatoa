@@ -37,6 +37,7 @@ class Regressor():
         # model_selection_function
         modelSelFunc = res_model_selection['f']
         method = res_model_selection['method']
+        
         if method == 0:
             # For methods that returns x_train, x_test, y_train, y_test
 
@@ -201,6 +202,17 @@ class Regressor():
             'data': results
         }
 
+    def buildModel(self, x, y, models=['randomForest'], selMode='type'):
+    
+        models = getModels(mode='regression',
+                           modelClasses=models, selMode=selMode)
+
+        model = models[0]
+        
+        _model = model['estimator'].fit(x, y)
+
+        return _model
+   
     def linearRegression(self, x, y, score=['r2'], cv=5, **kwargs):
         '''
         Quick linear regression models evaluation.
