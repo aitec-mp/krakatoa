@@ -25,7 +25,8 @@ def getModel(model):
         'RepeatedKFold' : {'f' : model_selection.RepeatedKFold, 'name' : 'RepeatedKFold', 'method' : 1},
         'StratifiedGroupKFold' : {'f' : model_selection.StratifiedGroupKFold, 'name' : 'StratifiedGroupKFold', 'method' : 1},
         'cross_validate' : {'f' : model_selection.cross_validate, 'name' : 'cross_validate', 'method' : 2},
-        'cross_val_score' : {'f' : model_selection.cross_val_score, 'name' : 'cross_val_score', 'method' : 2}
+        'cross_val_score' : {'f' : model_selection.cross_val_score, 'name' : 'cross_val_score', 'method' : 2},
+        'build' : {'f' : None, 'name' : None, 'method' : 3}
         }
     
     return models.get(model, None)
