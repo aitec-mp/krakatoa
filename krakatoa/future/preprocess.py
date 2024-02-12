@@ -89,6 +89,7 @@ class DataClean():
         self.originalDataset = pd.DataFrame()
         self.target = target
         self.scaler = dict()
+        self.dummies = dict()
     
     def _checkTarget(self):
         if self.target is None:
@@ -282,9 +283,11 @@ class DataClean():
 
         # Concatena o dataframe do one hot com o original
         concat_df = pd.concat([self.dataset, hot_df], axis=1).drop(columns=columns, axis=1)
-        self.oneHotEncoding = hot
         self.dataset = concat_df
-
+        
+        for col in columns:
+            self.dummies.update({col : hot})
+            
         return self.dataset
 
     def scaleColumns(self, columns: list, scaler: str='min_max', **kwargs):
